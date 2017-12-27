@@ -1,5 +1,3 @@
-
-
 # TLVCsys, SysCond, DiaMat
 
 TLVCsys:=proc(n::integer,u::symbol,v::symbol,r::symbol,s::symbol,d::symbol,e::symbol,
@@ -166,10 +164,10 @@ HasSameVariables:=proc(a::polynom,b::polynom)
 	fi;
 end proc:
 
-SelectRemoveTheGreatestItem:=proc(p::list)
+SelectRemoveMostVarItem:=proc(p::list)
 	local PC,PF;
 	uses ListTools;
-	PC:=[Categorize((x,y)->nops(x)=nops(y),p)];
+	PC:=[Categorize((x,y)->numelems(indets(x))=numelems(indets(y)),p)];
 	PF:=FindMaximalElement(PC,(x,y)->nops(x[1])<nops(y[1]),'position');
 	PF[1],Flatten(subsop(PF[2]=NULL,PC));
 end proc:
@@ -251,7 +249,7 @@ ItemClassByGreat:=proc(p::polynom)
 
 	Temp:=[op(expand(p))];
 
-	GreatestItems, NormalItems:=SelectRemoveTheGreatestItem(Temp);
+	GreatestItems, NormalItems:=SelectRemoveMostVarItem(Temp);
 	GreatestItemsClass:=[ListTools:-Categorize(HasSameVariables,GreatestItems)];
 
 	VariableSets:=map(MainAndAuxiVariables, GreatestItemsClass);
@@ -267,9 +265,11 @@ ItemClassByGreat:=proc(p::polynom)
 				jCoeff:=abs(coeffs(GreatestItemsClass[j][1]));
 				if iCoeff>=jCoeff then
 					tempout:=iItem*jCoeff/iCoeff;
-					iItem:=iItem-tempout;
-					Out:=subsop(j=[op(Out[j]),tempout],Out);
+				else
+					tempout:=iItem;
 				fi;
+				iItem:=iItem-tempout;
+				Out:=subsop(j=[op(Out[j]),tempout],Out);
 			fi;
 			if iItem=0 then
 				break;
@@ -291,6 +291,7 @@ end proc:
  * 	u[1]^3*u[2]*u[3]^2*v[2]^2*v[3]+u[1]^3*u[3]^3*v[2]^3+u[2]^3*u[5]^3*v[1]^3+
  * 	u[2]^3*u[5]^3*v[3]^3-u[2]^2*u[3]*u[5]^3*v[2]*v[3]^2-u[2]*u[3]^2*u[5]^3*v[2]^2*v[3]+
  * 	u[3]^3*u[5]^3*v[1]^3+u[3]^3*u[5]^3*v[2]^3);
+ * 
  * Test:=u[2]^3*u[3]^3*v[1]^3*v[4]^3+u[2]^3*u[3]^3*v[2]^3*v[4]^3
 +u[2]^3*u[3]^3*v[3]^3*v[5]^3+2*u[2]^3*u[3]^3*v[4]^3*v[5]^3
 -u[2]^3*u[3]^2*u[4]*v[1]^3*v[3]*v[4]^2-u[2]^3*u[3]^2*u[4]*v[2]^3*v[3]*v[4]^2
@@ -309,8 +310,11 @@ end proc:
 -u[3]*u[4]^2*u[5]^3*v[2]^3*v[3]^2*v[4]-u[3]*u[4]^2*u[5]^3*v[3]^2*v[4]*v[5]^3
 +u[4]^3*u[5]^3*v[1]^3*v[3]^3+2*u[4]^3*u[5]^3*v[2]^3*v[3]^3
 +u[4]^3*u[5]^3*v[2]^3*v[4]^3+u[4]^3*u[5]^3*v[3]^3*v[5]^3:
+ *
  * Test:=(u[3]*v[4]+u[4]*v[3])*(u[3]*v[4]-u[4]*v[3])^2*((u[1]*v[5]+u[5]*v[1])
 *(u[1]*v[5]-u[5]*v[1])^2+2*u[2]^3*v[1]^3+2*u[2]^3*v[5]^3);
+ * 
+ * Test := expand((x-y)^3+(t+z)^3);
  *)
 
 # IsEquivalent
@@ -490,6 +494,5 @@ IsDDLVSysGloballyStable:=proc(n::integer)
 end proc:
 
 IsDDLVSysGloballyStable(4);
-
 
 
