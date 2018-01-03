@@ -1,0 +1,204 @@
+\documentclass[10pt,a4paper]{article}
+
+%\usepackage[UTF8]{ctex}%, scheme=plain
+
+\usepackage{amsmath}
+\usepackage{amsfonts}
+%\usepackage{ntheorem}
+\newtheorem{Theorem}{Theorem}
+\newtheorem{Lemma}{Lemma}
+\newtheorem{Definition}{Definition}
+
+\usepackage[linesnumbered,ruled]{algorithm2e}
+
+\usepackage{url}
+\usepackage[colorlinks]{hyperref}
+
+\begin{document}
+
+\title{PD Algorithm}
+\author{Yummy}
+
+\maketitle
+
+\section{Positive Definite Algorithm}
+
+Positive definite (PD) algorithm is used to determine whether a particular polynomial is positive definite. By utilizing some sufficient conditions for the positive definiteness of polynomials, we can get that the polynomial is positive definite if it satisfies these sufficient conditions.
+
+Now we introduce the sufficient conditions for determining positive definiteness and semi-positiveness of the polynomial.
+
+\begin{Lemma}\label{le:CoeffPD}
+  A parametric polynomial about the variables $x = (x_1, \dots, x_n)$ and the parameters $u = (u_1, \dots, u_m)$ can be written as
+  \begin{equation*}
+    f(x_1, \dots, x_n; u_1, \dots, u_m) = \sum_{\alpha} f_{\alpha}(u) x^{\alpha}.
+  \end{equation*}
+  Here, we assume the parameters $u_1, \dots, u_m > 0$ and the variables $x_1, \dots, x_n > 0$. A monomial $x^{\alpha} = x_1^{\alpha_1} \cdots x_n^{\alpha_n}$, $\alpha$ is called the exponent of the monomial $x^\alpha$, and $f_{\alpha}(u) = f_{\alpha}(u_1, \dots, u_m)$ is the coefficient polynomial of the monomial $x^{\alpha}$.
+
+  If for any exponent $\alpha$, the corresponding nonzero coefficient polynomial $f_{\alpha}$ is positive semi-definite on $\mathbb{R}_{m}^{+} = \{(u_1, \dots, u_m) \mid u_i > 0,\ i = 1, \dots, m\}$, then $f(x; u)$ is positive semi-definite on $\mathbb{R}_{n}^{+} = \{(x_1, \dots, x_n) \mid x_i > 0,\ i = 1, \dots, n\}$. The polynomial $f$ is then called a ``polynomial with positive semi-definite coefficient''.
+
+  If there is a strictly positive definite polynomial on $\mathbb{R}_{m}^{+}$  in above positive semi-definite coefficient polynomials, then $f$ is positive definite on $\mathbb{R}_{n}^{+}$. And said polynomial $f$ is ``polynomial with positive definite coefficient''.
+\end{Lemma}
+
+\begin{Lemma}\label{le:SemiPDProd}
+  If the factorization of the polynomial $g(u)$ is as follows,
+  \begin{equation*}
+    g(u) = \prod_{i} g_i^{\beta_i}(u),
+  \end{equation*}
+  where $g_i$ is a polynomial with positive definite coefficient on variable $u$ or the exponent $\beta_i$ of the polynomial $g_i$ is even. Then, the polynomial $g$ is positive semi-definite on $\mathbb{R}_m^+$ and is called a ``product of positive semi-definite polynomials''.
+\end{Lemma}
+
+\begin{Lemma}\label{le:SemiPDSum}
+  If the polynomial $h(u)$ can be written as
+  \begin{equation*}
+    h(u) =  \sum_{i} h_i(u),
+  \end{equation*}
+  where $h_i$ is a product of positive semi-definite polynomials on the variable $u$ or a polynomial with positive definite coefficient, then the polynomial $h$ is positive semi-definite on $\mathbb{R}_m^+$ and is called a ``sum of positive semi-definite polynomials''.
+\end{Lemma}
+
+According to Lemma \ref{le:CoeffPD}, to determine the positiveness of a parametric polynomial $f(x;u)$ with respect to variable $x$, a sufficient condition is the coefficient polynomials $f_{\alpha}(u)$ of $f(x;u)$ all are positive semi-definite and at least one of these coefficient polynomials is positive definite. In this way, the problem of determining the positiveness of a parametric polynomial is transformed into the problem of determining the positiveness of some coefficient polynomials with less variables and less terms. That is,  determine whether or not a coefficient polynomial is a polynomial with positive definite coefficient, a product of positive semi-definite polynomials or a sum of positive semi-definite polynomials.
+
+The method to determine whether a coefficient polynomial $f_{\alpha}(u)$ is a polynomial with positive definite coefficient on $\mathbb{R}_m^+$ is straightforward. Since all of its coefficient polynomials are nonzero constant polynomials, all we have to do is determine these constants to be greater than zero, which means that the coefficient polynomial $f_{\alpha}(u)$ is polynomial with positive definite coefficient on $\mathbb{R}_m^+$.
+
+According to Lemma \ref{le:SemiPDProd}, the process of determining whether a coefficient polynomial is a product of positive semi-definite polynomials is as follows: firstly, factorize the polynomial. Then, for each factor, determine whether the exponent of the factor is even. If the exponent is even, the factor will be put in the removal list; if the exponent is odd, then determine whether the base of the factor is a polynomial with positive coefficient. If the factor is a polynomial with positive coefficient, it will be put in the removal list, if not, it will be put into the output list and wait for the subsequent determinant. If the output list is empty, then the input polynomial is a product of positive semi-definite polynomials.
+
+We will filter out a polynomial that is neither a polynomial with positive definite coefficient nor a product of positive semi-definite polynomials for the next step. The procedure is performed by the program \texttt{PDFilter}, whose pseudo-code is as in Algorithm \ref{al:PDFilter}.
+
+\begin{algorithm}[!ht]
+\KwIn{Polynomial or list of polynomials.}
+\KwOut{List of polynomials which are neither polynomials with positive definite coefficient nor products of positive semi-definite polynomials.}
+\Begin{
+  Select the polynomials which are not polynomials with positive definite coefficient from the input polynomials\;
+  Select the odd power factors from the factorization of polynomials in above step\;
+  Select the polynomials which are not polynomials with positive definite coefficient from above odd power factors\;
+  Multiply the selected factors from the same polynomial to generate candidate output polynomials\;
+  Remove the polynomials with positive definite coefficient produced in the above process\;
+  \Return{The remaining polynomials.}
+}
+\caption{\texttt{PDFilter}.\label{al:PDFilter}}
+\end{algorithm}
+
+If the polynomial is neither a polynomial with positive definite coefficient nor a product of positive semi-definite polynomials, then we determine whether it is a sum of positive semi-definite polynomials. The Sum of Square (SOS) algorithm is used to determine the sum of positive semi-definite polynomials. However, for the special polynomials of this system, we find a special pattern that turns they into the sum of positive semi-definite polynomials.
+
+For example, the polynomial
+\begin{align}
+  & h(u_{{1}}, u_{{2}}, u_{{3}}, u_{{5}}, v_{{1}}, v_{{2}}, v_{{3}}) = {}\notag\\
+  & {u_{{1}}}^{3}{u_{{2}}}^{3}{v_{{3}}}^{3} - {u_{{1}}}^{3}{u_{{2}}}^{2}u_{{3}}v_{{2}}{v_{{3}}}^{2} - {u_{{1}}}^{3}u_{{2}}{u_{{3}}}^{2}{v_{{2}}}^{2}v_{{3}} + {u_{{1}}}^{3}{u_{{3}}}^{3}{v_{{2}}}^{3} + {u_{{2}}}^{3}{u_{{5}}}^{3}{v_{{1}}}^{3}\notag\\
+  & {} + {u_{{2}}}^{3}{u_{{5}}}^{3}{v_{{3}}}^{3} - {u_{{2}}}^{2}u_{{3}}{u_{{5}}}^{3}v_{{2}}{v_{{3}}}^{2} - u_{{2}}{u_{{3}}}^{2}{u_{{5}}}^{3}{v_{{2}}}^{2}v_{{3}} + {u_{{3}}}^{3}{u_{{5}}}^{3}{v_{{1}}}^{3} + {u_{{3}}}^{3}{u_{{5}}}^{3}{v_{{2}}}^{3}\label{eq:ExampleOfTermClassByCharacter}
+\end{align}
+is neither polynomials with positive definite coefficient nor a product of positive semi-definite polynomials. However, after the following operation, it can be written as,
+\begin{align*}
+  h = {} & {u_{{1}}}^{3} \left( u_{{2}}v_{{3}} + u_{{3}}v_{{2}} \right)  \left( u_{{2}}v_{{3}} - u_{{3}}v_{{2}} \right) ^{2} + {u_{{5}}}^{3} \left( u_{{2}}v_{{3}} + u_{{3}}v_{{2}} \right)  \left( u_{{2}}v_{{3}} - u_{{3}}v_{{2}} \right) ^{2}\\
+  & {} + {u_{{5}}}^{3}{v_{{1}}}^{3} \left( u_{{2}}^{3} + u_{{3}}^{3} \right).
+\end{align*}
+The process of writing polynomial \eqref{eq:ExampleOfTermClassByCharacter} as the sum of positive semi-definite polynomials can be divided into two steps: first, classifying the terms in the polynomial; and second, factoring each class separately.
+
+The problem now is how to classify the terms in the polynomial. The main idea in the classification is based on the different variables contained in each term. However, it is not enough to classify these terms only according to the number or the symbol of variables contained. In our case, it is necessary to determine the classification according to the ``variable characteristics'' of the term. Next, we will determine the variable characteristics of some terms. Firstly, select the terms with the most variables in polynomial \eqref{eq:ExampleOfTermClassByCharacter}, that is,
+\begin{equation*}
+  - {u_{{1}}}^{3}{u_{{2}}}^{2}u_{{3}}v_{{2}}{v_{{3}}}^{2},\ - {u_{{1}}}^{3}u_{{2}}{u_{{3}}}^{2}{v_{{2}}}^{2}v_{{3}},\ - {u_{{2}}}^{2}u_{{3}}{u_{{5}}}^{3}v_{{2}}{v_{{3}}}^{2},\ - u_{{2}}{u_{{3}}}^{2}{u_{{5}}}^{3}{v_{{2}}}^{2}v_{{3}}.
+\end{equation*}
+Then divided they into two categories according to their different variables,
+\begin{equation*}
+  [- {u_{{1}}}^{3}{u_{{2}}}^{2}u_{{3}}v_{{2}}{v_{{3}}}^{2},\ - {u_{{1}}}^{3}u_{{2}}{u_{{3}}}^{2}{v_{{2}}}^{2}v_{{3}}],\ [- {u_{{2}}}^{2}u_{{3}}{u_{{5}}}^{3}v_{{2}}{v_{{3}}}^{2},\ - u_{{2}}{u_{{3}}}^{2}{u_{{5}}}^{3}{v_{{2}}}^{2}v_{{3}}].
+\end{equation*}
+Add these elements of the above two categories, and then factorize, we can get,
+\begin{equation*}
+  -{u_{{1}}}^{3}u_{{2}}u_{{3}}v_{{2}}v_{{3}} \left( u_{{2}}v_{{3}}+u_{{3}}v_{{2}} \right),\ -u_{{2}}u_{{3}}{u_{{5}}}^{3}v_{{2}}v_{{3}} \left( u_{{2}}v_{{3}}+u_{{3}}v_{{2}} \right).
+\end{equation*}
+Now, we find that there is a concordance factor in each of the formulas, and that the concordance factor contains two terms. Each term containing variables
+\begin{equation*}
+  \{u_2, v_3\},\ \{u_3, v_2\}.
+\end{equation*}
+In addition to these two sets of variables, the first category also contains the variable $\{u_1\}$, and the second category also contains the variable $\{u_5\}$. Based on the above variables sets, the two categories contain the following variables sets, respectively,
+\begin{equation*}
+  [\{u_2, v_3\},\ \{u_3, v_2\},\ \{u_1\}],\ [\{u_2, v_3\},\ \{u_3, v_2\},\ \{u_5\}].
+\end{equation*}
+The two variable set lists are called the variable characteristics of the corresponding categories.
+
+After obtaining the variable characteristics of the categories, the next step is to determine each remaining term belongs to one of them. The remaining terms of polynomial \eqref{eq:ExampleOfTermClassByCharacter} are
+\begin{equation*}
+  {u_{{1}}}^{3}{u_{{2}}}^{3}{v_{{3}}}^{3},\ {u_{{1}}}^{3}{u_{{3}}}^{3}{v_{{2}}}^{3},\ {u_{{2}}}^{3}{u_{{5}}}^{3}{v_{{1}}}^{3},\ {u_{{2}}}^{3}{u_{{5}}}^{3}{v_{{3}}}^{3},\  {u_{{3}}}^{3}{u_{{5}}}^{3}{v_{{1}}}^{3},\ {u_{{3}}}^{3}{u_{{5}}}^{3}{v_{{2}}}^{3}.
+\end{equation*}
+For the first remaining term ${u_{{1}}}^{3}{u_{{2}}}^{3}{v_{{3}}}^{3}$, it contains variables $V = \{u_1, u_2, v_3\}$. Through the following operation to determine whether the term belongs to the first category. Firstly, determine whether the first variable set $\{u_2, v_3\}$ of the first category's variable characteristic is contained in $V$. Knowing that it is indeed contained in $V$, then minus the set $\{u_2, v_3\}$ from set $V$ which becomes $\{u_1\}$. Secondly, determine whether the second variable set $\{u_3, v_2\}$ of the first category's variable characteristic is contained in $V=\{u_1\}$. We know that it isn't contained in $V$, then next to determine whether the third set of variables $\{u_1\}$ is contained in $V$. We know that it is, then minus the set $\{u_1\}$ from $V$. Now, the variable set $V = \emptyset$, then we call the variable set of the first remaining term belongs to the first category's variable characteristic, thus dividing the first remaining term into the first category.
+
+Similarly, it can be seen that the variable set of the second remaining term ${u_{{1}}}^{3}{u_{{3}}}^{3}{v_{{2}}}^{3}$ is also an empty set after going through the above process, so the term also belongs to the first category. And the variable set $\{u_2, u_5, v_1\}$ of the third term ${u_{{2}}}^{3}{u_{{5}}}^{3}{v_{{1}}}^{3}$ does not contain $\{u_2, v_3\}$ nor $\{u_3, v_2\}$ and $\{u_1\}$ in the variable characteristics of the first category, therefore, the third term does not belong to the first category. Similarly, it does not belong to the second category, so it will be a independent category. The same for the fifth remaining term, which also belong to the third category. For the fourth and the sixth terms, it is easy to verify that they belong to the second category. Thus we get the following categories of the terms in polynomial \eqref{eq:ExampleOfTermClassByCharacter}.
+\begin{eqnarray*}
+  && [[-{u_{{1}}}^{3}{u_{{2}}}^{2}u_{{3}}v_{{2}}{v_{{3}}}^{2}, -{u_{{1}}}^{3}u_{{2}}{u_{{3}}}^{2}{v_{{2}}}^{2}v_{{3}}, {u_{{1}}}^{3}{u_{{2}}}^{3}{v_{{3}}}^{3}, {u_{{1}}}^{3}{u_{{3}}}^{3}{v_{{2}}}^{3}],\\
+  && [-{u_{{2}}}^{2}u_{{3}}{u_{{5}}}^{3}v_{{2}}{v_{{3}}}^{2}, -u_{{2}}{u_{{3}}}^{2}{u_{{5}}}^{3}{v_{{2}}}^{2}v_{{3}}, {u_{{2}}}^{3}{u_{{5}}}^{3}{v_{{3}}}^{3}, {u_{{3}}}^{3}{u_{{5}}}^{3}{v_{{2}}}^{3}],\\
+  && [{u_{{2}}}^{3}{u_{{5}}}^{3}{v_{{1}}}^{3}, {u_{{3}}}^{3}{u_{{5}}}^{3}{v_{{1}}}^{3}]].
+\end{eqnarray*}
+
+Above all, we classify the most variable terms by the difference variables contained. And then determine whether a remaining term belongs to a certain category by the category's variable characteristic. The pseudo-code of the determining process is as Algorithm \ref{al:IsInTheTermClass}.
+\begin{algorithm}[!ht]
+  \KwIn{Term and the variable characteristic of a category.}
+  \KwOut{\texttt{True}: if the term belongs to the category, \texttt{False}: if not.}
+  \Begin{
+    $V$ := the variable set of the input term\;
+    \For{$i$ {\normalfont\textbf{in}} the input variable characteristic}
+    {
+      \If{$i$ is included in $V$}
+      {$V$ := $V \setminus i$\;}
+      \If{$V = \emptyset$}
+      {\Return{\normalfont\texttt{True.}}}
+    }
+    \Return{\normalfont\texttt{False.}}
+  }
+  \caption{\texttt{IsInTheTermClass}.}\label{al:IsInTheTermClass}
+\end{algorithm}
+
+When the classification of each term in polynomial is completed, apply summation to the elements of each category, and then computer the factorization of each summation. Finally, add up each factorization to generate the form of the sum of positive semi-definite polynomials. Of course, this process may need to be done more than once.The classification of polynomial terms is implemented by the procedure \texttt{TermClassByCharacter}, and the pseudo-code is as Algorithm \ref{al:TermClassByCharacter}.
+\begin{algorithm}[!ht]
+  \KwIn{Polynomial.}
+  \KwOut{The classification of terms in polynomial.}
+  \Begin{
+  Get the terms in polynomial\;
+  Select the most variable terms\;
+  Classify these most variable terms by their difference variables\;
+  Generate the variable characteristic of each category\;
+  \For{$i$ {\normalfont\textbf{in}} list of remaining terms}
+    {\For{$j$ {\normalfont\textbf{in}} list of category}
+      {
+       \eIf{{\normalfont\texttt{IsInTheTermClass}}($i$, the variable characteristic of $j$)}
+       {Add $i$ to the category $j$\;}
+       {Leave $i$ in the remaining list\;}
+      }
+    }
+  \Return{All categories and remaining list.}
+  }
+  \caption{\texttt{TermClassByCharacter}.\label{al:TermClassByCharacter}}
+\end{algorithm}
+
+Among the process of the sum of positive semi-definite polynomials, if a summation of a category is polynomial with positive definite coefficient or a product of positive semi-definite polynomials, then this summation can be remove, and finally the part summation that not be removed is output. In combination with the above procedures \texttt{PDFilter} and \texttt{TermClassByCharacter}, we filter and simplify the input polynomials and finally output the polynomials that can not be determined as the polynomial with positive definite coefficients and the sum or product of positive semi-definite polynomials. This process is implemented by procedure \texttt{PDSimplify}, and the pseudo-code is as the Algorithm \ref{al:PDSimplify}.
+\begin{algorithm}[!ht]
+  \KwIn{Polynomial or list of polynomials.}
+  \KwOut{The polynomials that can not be determined as the polynomial with positive definite coefficients and the sum or product of positive semi-definite polynomials.}
+  \Begin{
+  Select the polynomials that can not be determined as the polynomial with positive definite coefficients and the product of positive semi-definite polynomials (\texttt{PDFilter})\;
+  Apply the classification about terms to each selected polynomials (\texttt{TermClassByCharacter})\;
+  Apply the summation to each category of each polynomials, and then filter the polynomials with positive definite coefficients and the product of positive semi-definite polynomials in these summation (\texttt{PDFilter})\;
+  Add up the remaining summation to generate the candidate polynomials\;
+  Remove the polynomials with positive definite coefficient produced in the above process\;
+  \Return{The remaining polynomials.}
+  }
+  \caption{\texttt{PDSimplify}.}\label{al:PDSimplify}
+\end{algorithm}
+
+Finally, to determine the positiveness of a parametric polynomial $f(x;u)$ with respect to variable $x$ on $\mathbb{R}_n^+$, we need to determine the coefficient polynomials $f_\alpha(u)$ all are positive semi-definite and at least one of they positive definite on $\mathbb{R}_m^+$. Therefore, based on the positive definite algorithm above, we have written a program whose input is the parametric polynomial $f(x;u)$ and the variables $x$. After getting the coefficient polynomial $f_\alpha(u)$ of the specified variable $x$, we determine the positive definiteness of these coefficient polynomials and filter out the coefficient polynomials that can not be determined by the preceding process. If there is no output of coefficient polynomials, then the parametric polynomial $f(x;u)$ is positive definite on $\mathbb{R}_n^+$. We call this process Positive Definite (PD) algorithm for the positive definite polynomial determination, and its pseudo-code is as Algorithm \ref{al:PD}.
+\begin{algorithm}[!ht]
+  \KwIn{Parametric polynomial $f(x;u)$ and variables $x$.}
+  \KwOut{The polynomials that can not determine the positiveness.}
+  \Begin{
+    Get the coefficient polynomials $f_\alpha(u)$ of parametric polynomial $f(x;u)$ with respect to variable $x$\;
+    Apply \texttt{PDSimplify} twice (or more) to the list of coefficient polynomials\;
+    \Return{The output of {\normalfont\texttt{PDSimplify}}.}
+  }
+  \caption{\texttt{PD}.}\label{al:PD}
+\end{algorithm}
+
+\appendix
+
+\section{Maple Program}
+
+The above procedures are available on \href{https://github.com/woshiYummy/IsDDLVSysGloballyStable.git}{Github}.\\
+\url{https://github.com/woshiYummy/IsDDLVSysGloballyStable.git}
+
+\end{document} 
